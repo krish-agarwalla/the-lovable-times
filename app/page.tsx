@@ -1,51 +1,42 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import ImageUploader from '@/components/admin/ImageUploader';
-import ImageManager from '@/components/admin/ImageManager';
-import ContentEditor from '@/components/admin/ContentEditor';
-import LogoutButton from '@/components/admin/LogoutButton';
+import Hero from '@/components/Hero';
+import Gallery from '@/components/Gallery';
+import About from '@/components/About';
+import Contact from '@/components/Contact';
 import type { GalleryImage, SiteContent } from '@/types/database';
 
-export default async function AdminDashboard() {
+// Helper to turn the key-value rows into an easy lookup object
+function contentMap(rows: SiteContent[]) {
+  return rows.reduce<Record<string, string>>((acc, row) => {
+    acc[row.key] = row.value;
+    return acc;
+  }, {});
+}
+
+export default async function HomePage() {
   const supabase = await createClient();
-
-  // Defense in depth: middleware already blocks unauthenticated
-  // access, but we double-check here too since this is sensitive.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/admin/login');
-  }
 
   const [{ data: images }, { data: content }] = await Promise.all([
     supabase
       .from('gallery_images')
       .select('*')
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false }),
     supabase.from('site_content').select('*'),
   ]);
 
-  return (
-    <div className="mx-auto max-w-6xl px-6 pb-24 pt-28">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="font-street text-3xl text-white">
-            ADMIN <span className="text-neon-pink">DASHBOARD</span>
-          </h1>
-          <p className="text-sm text-white/50">Logged in as {user.email}</p>
-        </div>
-        <LogoutButton />
-      </div>
+  const c = contentMap((content as SiteContent[]) ?? []);
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-8">
-          <ImageUploader />
-          <ContentEditor content={(content as SiteContent[]) ?? []} />
-        </div>
-        <ImageManager images={(images as GalleryImage[]) ?? []} />
-      </div>
-    </div>
+  return (
+    <>
+      <Hero tagline={c.hero_tagline} subtext={c.hero_subtext} />
+      <Gallery images={(images as GalleryImage[]) ?? []} />
+      <About aboutText={c.about_text} />
+      <Contact
+        email={c.contact_email}
+        phone={c.contact_phone}
+        instagram={c.contact_instagram}
+      />
+    </>
   );
 }

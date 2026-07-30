@@ -1,80 +1,51 @@
-"use client";
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import ImageUploader from '@/components/admin/ImageUploader';
+import ImageManager from '@/components/admin/ImageManager';
+import ContentEditor from '@/components/admin/ContentEditor';
+import LogoutButton from '@/components/admin/LogoutButton';
+import type { GalleryImage, SiteContent } from '@/types/database';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { Lock } from "lucide-react";
-import { toast } from "sonner";
+export default async function AdminDashboard() {
+  const supabase = await createClient();
 
-export default function AdminLoginPage() {
-  const router = useRouter();
-  const supabase = createClient();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  // Defense in depth: middleware already blocks unauthenticated
+  // access, but we double-check here too since this is sensitive.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  if (!user) {
+    redirect('/admin/login');
+  }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    toast.success("Welcome back, Sangram.");
-    router.push("/admin");
-    router.refresh(); // ensures middleware re-evaluates session
-  };
+  const [{ data: images }, { data: content }] = await Promise.all([
+    supabase
+      .from('gallery_images')
+      .select('*')
+      .order('created_at', { ascending: false }),
+    supabase.from('site_content').select('*'),
+  ]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 pt-24">
-      <form
-        onSubmit={handleLogin}
-        className="w-full max-w-md rounded-2xl border border-neon-pink/20 bg-grit p-8"
-      >
-        <div className="mb-6 flex items-center justify-center gap-2">
-          <Lock className="h-6 w-6 text-neon-pink" />
-          <h1 className="font-street text-2xl text-white">ADMIN ACCESS</h1>
+    <div className="mx-auto max-w-6xl px-6 pb-24 pt-28">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="font-street text-3xl text-white">
+            ADMIN <span className="text-neon-pink">DASHBOARD</span>
+          </h1>
+          <p className="text-sm text-white/50">Logged in as {user.email}</p>
         </div>
+        <LogoutButton />
+      </div>
 
-        <label className="mb-1 block text-xs uppercase tracking-widest text-white/50">
-          Email
-        </label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mb-4 w-full rounded-lg border border-white/10 bg-charcoal px-4 py-3 text-white outline-none focus:border-neon-pink"
-        />
-
-        <label className="mb-1 block text-xs uppercase tracking-widest text-white/50">
-          Password
-        </label>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-6 w-full rounded-lg border border-white/10 bg-charcoal px-4 py-3 text-white outline-none focus:border-neon-pink"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-full bg-neon-pink py-3 font-semibold uppercase tracking-widest text-charcoal transition hover:shadow-neon-glow disabled:opacity-50"
-        >
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-      </form>
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="space-y-8">
+          <ImageUploader />
+          <ContentEditor content={(content as SiteContent[]) ?? []} />
+        </div>
+        <ImageManager images={(images as GalleryImage[]) ?? []} />
+      </div>
     </div>
   );
 }
