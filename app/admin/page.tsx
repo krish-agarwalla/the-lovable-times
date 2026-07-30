@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { Lock } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Lock } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -29,8 +29,8 @@ export default function AdminLoginPage() {
       return;
     }
 
-    toast.success('Welcome back, Sangram.');
-    router.push('/admin');
+    toast.success("Welcome back, Sangram.");
+    router.push("/admin");
     router.refresh(); // ensures middleware re-evaluates session
   };
 
@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
           disabled={loading}
           className="w-full rounded-full bg-neon-pink py-3 font-semibold uppercase tracking-widest text-charcoal transition hover:shadow-neon-glow disabled:opacity-50"
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
     </div>
