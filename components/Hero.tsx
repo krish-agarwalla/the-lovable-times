@@ -52,14 +52,13 @@ export default function Hero({
 
       {/* ================= CONTENT ================= */}
 
-      <motion.p
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative z-10 mb-4 text-sm uppercase tracking-[0.3em] text-pastel-pink"
+        className="relative z-10 mb-4 flex items-center justify-center gap-2 text-sm uppercase tracking-[0.3em] text-pastel-pink"
       >
-        <div className="mt-6 flex items-center gap-2 text-white/50">
-  <MapPin className="h-4 w-4 text-neon-pink" />
+        <MapPin className="h-4 w-4 text-neon-pink" />
 
         <a
           href="https://maps.app.goo.gl/MbQngwRabaBQfwPY8"
@@ -69,8 +68,7 @@ export default function Hero({
         >
           Rairangpur, Mayurbhanj, Odisha
         </a>
-      </div>
-      </motion.p>
+      </motion.div>
 
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
