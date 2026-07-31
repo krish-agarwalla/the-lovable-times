@@ -1,15 +1,17 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { addTestimonial, deleteTestimonial } from '@/app/admin/actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Trash2, Star } from 'lucide-react';
+import ConfirmDialog from './ConfirmDialog';
 import type { Testimonial } from '@/types/database';
 
 export default function TestimonialsManager({ items }: { items: Testimonial[] }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [pending, setPending] = useState<Testimonial | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,9 +23,10 @@ export default function TestimonialsManager({ items }: { items: Testimonial[] })
     router.refresh();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this testimonial?')) return;
-    const result = await deleteTestimonial(id);
+  const confirmDelete = async () => {
+    if (!pending) return;
+    const result = await deleteTestimonial(pending.id);
+    setPending(null);
     if (result.error) return toast.error(result.error);
     toast.success('Deleted.');
     router.refresh();
@@ -68,10 +71,7 @@ export default function TestimonialsManager({ items }: { items: Testimonial[] })
 
       <div className="space-y-2">
         {items.map((t) => (
-          <div
-            key={t.id}
-            className="flex items-start justify-between rounded-lg border border-white/10 bg-charcoal p-3"
-          >
+          <div key={t.id} className="flex items-start justify-between rounded-lg border border-white/10 bg-charcoal p-3">
             <div>
               <p className="text-sm font-semibold text-white">{t.client_name}</p>
               <p className="text-xs text-white/50">&ldquo;{t.quote}&rdquo;</p>
@@ -82,7 +82,7 @@ export default function TestimonialsManager({ items }: { items: Testimonial[] })
               </div>
             </div>
             <button
-              onClick={() => handleDelete(t.id)}
+              onClick={() => setPending(t)}
               className="text-white/40 hover:text-neon-pink"
             >
               <Trash2 className="h-4 w-4" />
@@ -90,6 +90,14 @@ export default function TestimonialsManager({ items }: { items: Testimonial[] })
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={!!pending}
+        title="Delete testimonial?"
+        description={`Remove ${pending?.client_name}'s review from your site permanently.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setPending(null)}
+      />
     </div>
   );
 }

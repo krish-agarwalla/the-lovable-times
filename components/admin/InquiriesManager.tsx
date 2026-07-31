@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { updateInquiryStatus, deleteInquiry } from '@/app/admin/actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Trash2, Mail, Phone } from 'lucide-react';
+import ConfirmDialog from './ConfirmDialog';
 import type { Inquiry } from '@/types/database';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -15,6 +17,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }) {
   const router = useRouter();
+  const [pending, setPending] = useState<Inquiry | null>(null);
 
   const handleStatusChange = async (id: string, status: string) => {
     const result = await updateInquiryStatus(id, status);
@@ -23,9 +26,10 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
     router.refresh();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this inquiry?')) return;
-    const result = await deleteInquiry(id);
+  const confirmDelete = async () => {
+    if (!pending) return;
+    const result = await deleteInquiry(pending.id);
+    setPending(null);
     if (result.error) return toast.error(result.error);
     toast.success('Inquiry deleted.');
     router.refresh();
@@ -43,25 +47,18 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
         )}
 
         {inquiries.map((inq) => (
-          <div
-            key={inq.id}
-            className="rounded-lg border border-white/10 bg-charcoal p-4"
-          >
+          <div key={inq.id} className="rounded-lg border border-white/10 bg-charcoal p-4">
             <div className="mb-2 flex items-start justify-between">
               <div>
                 <p className="font-semibold text-white">{inq.name}</p>
                 <p className="text-xs text-white/40">{inq.event_type}</p>
               </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${STATUS_COLORS[inq.status]}`}
-              >
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${STATUS_COLORS[inq.status]}`}>
                 {inq.status}
               </span>
             </div>
 
-            {inq.message && (
-              <p className="mb-2 text-sm text-white/70">{inq.message}</p>
-            )}
+            {inq.message && <p className="mb-2 text-sm text-white/70">{inq.message}</p>}
 
             <div className="mb-3 flex flex-wrap gap-3 text-xs text-white/50">
               <a href={`mailto:${inq.email}`} className="flex items-center gap-1 hover:text-neon-pink">
@@ -86,7 +83,7 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
                 <option value="closed">Closed</option>
               </select>
               <button
-                onClick={() => handleDelete(inq.id)}
+                onClick={() => setPending(inq)}
                 className="ml-auto text-white/40 hover:text-neon-pink"
               >
                 <Trash2 className="h-4 w-4" />
@@ -95,6 +92,14 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={!!pending}
+        title="Delete this inquiry?"
+        description={`This removes "${pending?.name}"'s inquiry permanently. This can't be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setPending(null)}
+      />
     </div>
   );
 }

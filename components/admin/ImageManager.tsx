@@ -1,19 +1,27 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { deleteImage } from '@/app/admin/actions';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import ConfirmDialog from './ConfirmDialog';
 import type { GalleryImage } from '@/types/database';
 
 export default function ImageManager({ images }: { images: GalleryImage[] }) {
   const router = useRouter();
+  const [pending, setPending] = useState<GalleryImage | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const handleDelete = async (id: string, storagePath: string) => {
-    if (!confirm('Delete this photo permanently?')) return;
+  const confirmDelete = async () => {
+    if (!pending) return;
+    setDeleting(true);
 
-    const result = await deleteImage(id, storagePath);
+    const result = await deleteImage(pending.id, pending.storage_path);
+    setDeleting(false);
+    setPending(null);
+
     if (result.error) {
       toast.error(result.error);
       return;
@@ -39,7 +47,7 @@ export default function ImageManager({ images }: { images: GalleryImage[] }) {
               className="h-32 w-full object-cover"
             />
             <button
-              onClick={() => handleDelete(img.id, img.storage_path)}
+              onClick={() => setPending(img)}
               className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity group-hover:opacity-100"
             >
               <Trash2 className="h-6 w-6 text-neon-pink" />
@@ -47,6 +55,15 @@ export default function ImageManager({ images }: { images: GalleryImage[] }) {
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={!!pending}
+        title="Delete this photo?"
+        description="This will permanently remove the image from your gallery and storage. This can't be undone."
+        confirmLabel={deleting ? 'Deleting...' : 'Delete'}
+        onConfirm={confirmDelete}
+        onCancel={() => setPending(null)}
+      />
     </div>
   );
 }
