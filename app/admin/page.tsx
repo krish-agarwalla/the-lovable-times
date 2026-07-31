@@ -3,29 +3,23 @@ import { redirect } from 'next/navigation';
 import ImageUploader from '@/components/admin/ImageUploader';
 import ImageManager from '@/components/admin/ImageManager';
 import ContentEditor from '@/components/admin/ContentEditor';
+import InquiriesManager from '@/components/admin/InquiriesManager';
+import TestimonialsManager from '@/components/admin/TestimonialsManager';
 import LogoutButton from '@/components/admin/LogoutButton';
-import type { GalleryImage, SiteContent } from '@/types/database';
+import type { GalleryImage, SiteContent, Inquiry, Testimonial } from '@/types/database';
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/admin/login');
 
-  // Defense in depth: middleware already blocks unauthenticated
-  // access, but we double-check here too since this is sensitive.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/admin/login');
-  }
-
-  const [{ data: images }, { data: content }] = await Promise.all([
-    supabase
-      .from('gallery_images')
-      .select('*')
-      .order('created_at', { ascending: false }),
-    supabase.from('site_content').select('*'),
-  ]);
+  const [{ data: images }, { data: content }, { data: inquiries }, { data: testimonials }] =
+    await Promise.all([
+      supabase.from('gallery_images').select('*').order('created_at', { ascending: false }),
+      supabase.from('site_content').select('*'),
+      supabase.from('inquiries').select('*').order('created_at', { ascending: false }),
+      supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
+    ]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24 pt-28">
@@ -43,8 +37,12 @@ export default async function AdminDashboard() {
         <div className="space-y-8">
           <ImageUploader />
           <ContentEditor content={(content as SiteContent[]) ?? []} />
+          <TestimonialsManager items={(testimonials as Testimonial[]) ?? []} />
         </div>
-        <ImageManager images={(images as GalleryImage[]) ?? []} />
+        <div className="space-y-8">
+          <InquiriesManager inquiries={(inquiries as Inquiry[]) ?? []} />
+          <ImageManager images={(images as GalleryImage[]) ?? []} />
+        </div>
       </div>
     </div>
   );

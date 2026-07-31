@@ -98,3 +98,62 @@ export async function logout() {
   await supabase.auth.signOut();
   revalidatePath('/admin');
 }
+
+// ---------- INQUIRIES ----------
+export async function updateInquiryStatus(id: string, status: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authorized.' };
+
+  const { error } = await supabase
+    .from('inquiries')
+    .update({ status })
+    .eq('id', id);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin');
+  return { success: true };
+}
+
+export async function deleteInquiry(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authorized.' };
+
+  const { error } = await supabase.from('inquiries').delete().eq('id', id);
+  if (error) return { error: error.message };
+  revalidatePath('/admin');
+  return { success: true };
+}
+
+// ---------- TESTIMONIALS ----------
+export async function addTestimonial(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authorized.' };
+
+  const client_name = formData.get('client_name') as string;
+  const quote = formData.get('quote') as string;
+  const rating = Number(formData.get('rating')) || 5;
+
+  const { error } = await supabase
+    .from('testimonials')
+    .insert({ client_name, quote, rating });
+
+  if (error) return { error: error.message };
+  revalidatePath('/');
+  revalidatePath('/admin');
+  return { success: true };
+}
+
+export async function deleteTestimonial(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authorized.' };
+
+  const { error } = await supabase.from('testimonials').delete().eq('id', id);
+  if (error) return { error: error.message };
+  revalidatePath('/');
+  revalidatePath('/admin');
+  return { success: true };
+}

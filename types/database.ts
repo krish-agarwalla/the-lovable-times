@@ -13,3 +13,23 @@ export interface SiteContent {
   value: string;
   updated_at: string;
 }
+
+export interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  event_type: string;
+  message: string | null;
+  status: 'new' | 'contacted' | 'booked' | 'closed';
+  created_at: string;
+}
+
+export interface Testimonial {
+  id: string;
+  client_name: string;
+  quote: string;
+  rating: number;
+  sort_order: number;
+  created_at: string;
+}
