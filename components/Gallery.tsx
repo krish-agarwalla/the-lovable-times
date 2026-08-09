@@ -2,8 +2,17 @@
 
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { GALLERY_CATEGORIES } from '@/lib/supabase/constants';
 import type { GalleryImage } from '@/types/database';
 
@@ -38,15 +47,16 @@ export default function Gallery({
   const autoScrollRef =
     useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Keep the ref synchronized with the state.
-  // This lets the auto-scroll interval always know
-  // which image is currently in the center.
+  const isPausedRef =
+    useRef(false);
+
+  // Keep ref synchronized with state
   useEffect(() => {
     activeIndexRef.current = activeIndex;
   }, [activeIndex]);
 
   // ============================================================
-  // CATEGORY LIST
+  // CATEGORIES
   // ============================================================
 
   const categories = [
@@ -68,11 +78,37 @@ export default function Gallery({
     );
   }, [images, activeCategory]);
 
+  /*
+   * We render 3 copies of the same images.
+   *
+   * Example:
+   *
+   * [1 2 3 4] [1 2 3 4] [1 2 3 4]
+   *             ↑
+   *        starting area
+   *
+   * This allows us to keep moving in one direction
+   * while seamlessly jumping back to the middle copy.
+   */
+  const carouselImages = useMemo(() => {
+    if (!filtered.length) {
+      return [];
+    }
+
+    return [
+      ...filtered,
+      ...filtered,
+      ...filtered,
+    ];
+  }, [filtered]);
+
   // ============================================================
   // OPEN / CLOSE IMAGE
   // ============================================================
 
-  const openImage = (image: GalleryImage) => {
+  const openImage = (
+    image: GalleryImage
+  ) => {
     setSelected(image);
   };
 
@@ -81,20 +117,21 @@ export default function Gallery({
   };
 
   // ============================================================
-  // FIND WHICH IMAGE IS IN THE CENTER
+  // FIND CENTER IMAGE
   // ============================================================
 
-  const updateActiveIndex = () => {
-    const container = carouselRef.current;
+  const findCenterIndex = () => {
+    const container =
+      carouselRef.current;
 
-    if (!container) return;
+    if (!container) return 0;
 
     const cards =
       container.querySelectorAll<HTMLElement>(
         '[data-gallery-card]'
       );
 
-    if (!cards.length) return;
+    if (!cards.length) return 0;
 
     const containerRect =
       container.getBoundingClientRect();
@@ -106,76 +143,36 @@ export default function Gallery({
     let closestIndex = 0;
     let closestDistance = Infinity;
 
-    cards.forEach((card, index) => {
-      const rect =
-        card.getBoundingClientRect();
+    cards.forEach(
+      (card, index) => {
+        const rect =
+          card.getBoundingClientRect();
 
-      const cardCenter =
-        rect.left +
-        rect.width / 2;
+        const cardCenter =
+          rect.left +
+          rect.width / 2;
 
-      const distance = Math.abs(
-        containerCenter - cardCenter
-      );
+        const distance =
+          Math.abs(
+            containerCenter -
+              cardCenter
+          );
 
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIndex = index;
+        if (
+          distance <
+          closestDistance
+        ) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
       }
-    });
+    );
 
-    if (
-      activeIndexRef.current !== closestIndex
-    ) {
-      activeIndexRef.current = closestIndex;
-      setActiveIndex(closestIndex);
-    }
+    return closestIndex;
   };
 
   // ============================================================
-  // SCROLL LISTENER
-  // ============================================================
-
-  useEffect(() => {
-    const container =
-      carouselRef.current;
-
-    if (!container) return;
-
-    const handleScroll = () => {
-      updateActiveIndex();
-    };
-
-    const handleResize = () => {
-      updateActiveIndex();
-    };
-
-    container.addEventListener(
-      'scroll',
-      handleScroll,
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'resize',
-      handleResize
-    );
-
-    return () => {
-      container.removeEventListener(
-        'scroll',
-        handleScroll
-      );
-
-      window.removeEventListener(
-        'resize',
-        handleResize
-      );
-    };
-  }, [filtered]);
-
-  // ============================================================
-  // SCROLL TO A PARTICULAR IMAGE
+  // SCROLL TO INDEX
   // ============================================================
 
   const scrollToIndex = (
@@ -210,17 +207,354 @@ export default function Gallery({
       cardRect.left +
       cardRect.width / 2;
 
-    const scrollDifference =
-      cardCenter - containerCenter;
+    const difference =
+      cardCenter -
+      containerCenter;
 
     container.scrollTo({
       left:
         container.scrollLeft +
-        scrollDifference,
+        difference,
       behavior: smooth
         ? 'smooth'
         : 'auto',
     });
+  };
+
+  // ============================================================
+  // INFINITE LOOP HANDLER
+  // ============================================================
+
+  const handleInfiniteLoop = (
+    currentIndex: number
+  ) => {
+    const originalLength =
+      filtered.length;
+
+    if (!originalLength) {
+      return currentIndex;
+    }
+
+    /*
+     * We want to stay inside the middle copy:
+     *
+     * COPY 1       COPY 2       COPY 3
+     * 0...n-1      n...2n-1     2n...3n-1
+     *
+     * If the user/auto-scroll reaches COPY 3,
+     * instantly move to the equivalent image
+     * inside COPY 2.
+     */
+
+    if (
+      currentIndex >=
+      originalLength * 2
+    ) {
+      const equivalentIndex =
+        originalLength +
+        (currentIndex %
+          originalLength);
+
+      scrollToIndex(
+        equivalentIndex,
+        false
+      );
+
+      return equivalentIndex;
+    }
+
+    /*
+     * Also protect the left side if the user
+     * manually swipes too far backwards.
+     */
+    if (
+      currentIndex <
+      originalLength
+    ) {
+      const equivalentIndex =
+        originalLength +
+        (currentIndex %
+          originalLength);
+
+      scrollToIndex(
+        equivalentIndex,
+        false
+      );
+
+      return equivalentIndex;
+    }
+
+    return currentIndex;
+  };
+
+  // ============================================================
+  // UPDATE CENTER IMAGE
+  // ============================================================
+
+  const updateActiveIndex = () => {
+    if (!filtered.length) return;
+
+    const rawIndex =
+      findCenterIndex();
+
+    const correctedIndex =
+      handleInfiniteLoop(
+        rawIndex
+      );
+
+    if (
+      activeIndexRef.current !==
+      correctedIndex
+    ) {
+      activeIndexRef.current =
+        correctedIndex;
+
+      setActiveIndex(
+        correctedIndex
+      );
+    }
+  };
+
+  // ============================================================
+  // SCROLL LISTENER
+  // ============================================================
+
+  useEffect(() => {
+    const container =
+      carouselRef.current;
+
+    if (!container) return;
+
+    const handleScroll = () => {
+      updateActiveIndex();
+    };
+
+    const handleResize = () => {
+      updateActiveIndex();
+    };
+
+    container.addEventListener(
+      'scroll',
+      handleScroll,
+      {
+        passive: true,
+      }
+    );
+
+    window.addEventListener(
+      'resize',
+      handleResize
+    );
+
+    return () => {
+      container.removeEventListener(
+        'scroll',
+        handleScroll
+      );
+
+      window.removeEventListener(
+        'resize',
+        handleResize
+      );
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered]);
+
+  // ============================================================
+  // POSITION CAROUSEL IN MIDDLE COPY
+  // ============================================================
+
+  useEffect(() => {
+    if (!filtered.length) {
+      return;
+    }
+
+    const middleIndex =
+      filtered.length;
+
+    activeIndexRef.current =
+      middleIndex;
+
+    /*
+     * Wait until the new category has rendered.
+     * This effect does NOT call setState.
+     * It only moves the DOM scroll position.
+     */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToIndex(
+          middleIndex,
+          false
+        );
+      });
+    });
+  }, [activeCategory, filtered.length]);
+
+  // ============================================================
+  // AUTO SLIDESHOW
+  // ============================================================
+
+  useEffect(() => {
+    if (filtered.length <= 0) {
+      return;
+    }
+
+    const startAutoScroll = () => {
+      if (autoScrollRef.current) {
+        clearInterval(
+          autoScrollRef.current
+        );
+      }
+
+      autoScrollRef.current =
+        setInterval(() => {
+          /*
+           * IMPORTANT:
+           * If user is hovering an image,
+           * don't move the carousel.
+           */
+          if (isPausedRef.current) {
+            return;
+          }
+
+          const currentIndex =
+            activeIndexRef.current;
+
+          const originalLength =
+            filtered.length;
+
+          let nextIndex =
+            currentIndex + 1;
+
+          /*
+           * We always move FORWARD.
+           *
+           * When we reach the end of the
+           * middle copy, jump to the
+           * equivalent position in the
+           * middle copy.
+           */
+          if (
+            nextIndex >=
+            originalLength * 2
+          ) {
+            const equivalentIndex =
+              originalLength +
+              (
+                currentIndex %
+                originalLength
+              );
+
+            scrollToIndex(
+              equivalentIndex,
+              false
+            );
+
+            activeIndexRef.current =
+              equivalentIndex;
+
+            setActiveIndex(
+              equivalentIndex
+            );
+
+            nextIndex =
+              equivalentIndex + 1;
+          }
+
+          activeIndexRef.current =
+            nextIndex;
+
+          setActiveIndex(
+            nextIndex
+          );
+
+          scrollToIndex(
+            nextIndex,
+            true
+          );
+        }, 3500);
+    };
+
+    startAutoScroll();
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(
+          autoScrollRef.current
+        );
+
+        autoScrollRef.current =
+          null;
+      }
+    };
+  }, [filtered.length]);
+
+  // ============================================================
+  // PAUSE ON HOVER
+  // ============================================================
+
+  const pauseSlideshow = () => {
+    isPausedRef.current = true;
+  };
+
+  const resumeSlideshow = () => {
+    isPausedRef.current = false;
+  };
+
+  // ============================================================
+  // MANUAL NAVIGATION
+  // ============================================================
+
+  const scrollToImage = (
+    direction: 'left' | 'right'
+  ) => {
+    if (!filtered.length) {
+      return;
+    }
+
+    const originalLength =
+      filtered.length;
+
+    const currentIndex =
+      activeIndexRef.current;
+
+    let nextIndex: number;
+
+    if (direction === 'right') {
+      nextIndex =
+        currentIndex + 1;
+
+      if (
+        nextIndex >=
+        originalLength * 2
+      ) {
+        nextIndex =
+          originalLength;
+      }
+    } else {
+      nextIndex =
+        currentIndex - 1;
+
+      if (
+        nextIndex <
+        originalLength
+      ) {
+        nextIndex =
+          originalLength * 2 - 1;
+      }
+    }
+
+    activeIndexRef.current =
+      nextIndex;
+
+    setActiveIndex(
+      nextIndex
+    );
+
+    scrollToIndex(
+      nextIndex,
+      true
+    );
   };
 
   // ============================================================
@@ -230,98 +564,14 @@ export default function Gallery({
   const handleCategoryChange = (
     category: string
   ) => {
-    setActiveCategory(category);
+    /*
+     * Stop current slideshow position
+     * while the new category renders.
+     */
+    isPausedRef.current = false;
 
-    activeIndexRef.current = 0;
-    setActiveIndex(0);
-
-    // Wait for React to render the new category
-    // before trying to scroll the new carousel.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!carouselRef.current) return;
-
-        carouselRef.current.scrollTo({
-          left: 0,
-          behavior: 'auto',
-        });
-      });
-    });
-  };
-
-  // ============================================================
-  // AUTO CAROUSEL
-  // ============================================================
-
-  useEffect(() => {
-    if (filtered.length <= 1) {
-      return;
-    }
-
-    autoScrollRef.current =
-      setInterval(() => {
-        const currentIndex =
-          activeIndexRef.current;
-
-        const nextIndex =
-          currentIndex + 1 >= filtered.length
-            ? 0
-            : currentIndex + 1;
-
-        activeIndexRef.current =
-          nextIndex;
-
-        scrollToIndex(
-          nextIndex,
-          true
-        );
-      }, 4000);
-
-    return () => {
-      if (autoScrollRef.current) {
-        clearInterval(
-          autoScrollRef.current
-        );
-
-        autoScrollRef.current = null;
-      }
-    };
-  }, [filtered.length]);
-
-  // ============================================================
-  // MANUAL NAVIGATION
-  // ============================================================
-
-  const scrollToImage = (
-    direction: 'left' | 'right'
-  ) => {
-    if (!filtered.length) return;
-
-    const currentIndex =
-      activeIndexRef.current;
-
-    let targetIndex: number;
-
-    if (direction === 'right') {
-      targetIndex =
-        currentIndex + 1 >= filtered.length
-          ? 0
-          : currentIndex + 1;
-    } else {
-      targetIndex =
-        currentIndex - 1 < 0
-          ? filtered.length - 1
-          : currentIndex - 1;
-    }
-
-    activeIndexRef.current =
-      targetIndex;
-
-    setActiveIndex(targetIndex);
-
-    scrollToIndex(
-      targetIndex,
-      true
+    setActiveCategory(
+      category
     );
   };
 
@@ -341,7 +591,8 @@ export default function Gallery({
           </h2>
 
           <p className="text-center text-white/40">
-            No photos uploaded yet. Check back soon.
+            No photos uploaded yet.
+            Check back soon.
           </p>
         </div>
       </section>
@@ -349,7 +600,7 @@ export default function Gallery({
   }
 
   // ============================================================
-  // MAIN GALLERY
+  // MAIN
   // ============================================================
 
   return (
@@ -388,7 +639,9 @@ export default function Gallery({
             key={cat}
             type="button"
             onClick={() =>
-              handleCategoryChange(cat)
+              handleCategoryChange(
+                cat
+              )
             }
             className={`rounded-full border px-5 py-2 text-sm font-medium uppercase tracking-widest transition-all ${
               activeCategory === cat
@@ -396,13 +649,15 @@ export default function Gallery({
                 : 'border-white/20 text-white/60 hover:border-neon-pink/50 hover:text-white'
             }`}
           >
-            {cat === 'all' ? 'All' : cat}
+            {cat === 'all'
+              ? 'All'
+              : cat}
           </button>
         ))}
       </div>
 
       {/* ========================================================
-          CATEGORY CONTENT
+          CAROUSEL
       ========================================================= */}
 
       <AnimatePresence mode="wait">
@@ -418,14 +673,10 @@ export default function Gallery({
             opacity: 0,
           }}
           transition={{
-            duration: 0.4,
+            duration: 0.35,
           }}
           className="relative"
         >
-          {/* ====================================================
-              EMPTY CATEGORY
-          ==================================================== */}
-
           {filtered.length === 0 ? (
             <p className="py-12 text-center text-white/40">
               No photos in this category yet.
@@ -439,7 +690,9 @@ export default function Gallery({
               <button
                 type="button"
                 onClick={() =>
-                  scrollToImage('left')
+                  scrollToImage(
+                    'left'
+                  )
                 }
                 aria-label="Previous image"
                 className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/60 p-3 text-white backdrop-blur-md transition hover:border-neon-pink hover:text-neon-pink lg:flex"
@@ -454,7 +707,9 @@ export default function Gallery({
               <button
                 type="button"
                 onClick={() =>
-                  scrollToImage('right')
+                  scrollToImage(
+                    'right'
+                  )
                 }
                 aria-label="Next image"
                 className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/60 p-3 text-white backdrop-blur-md transition hover:border-neon-pink hover:text-neon-pink lg:flex"
@@ -463,47 +718,65 @@ export default function Gallery({
               </button>
 
               {/* ==================================================
-                  HORIZONTAL CAROUSEL
+                  HORIZONTAL INFINITE CAROUSEL
               =================================================== */}
 
               <div
                 ref={carouselRef}
+                onMouseEnter={
+                  pauseSlideshow
+                }
+                onMouseLeave={
+                  resumeSlideshow
+                }
                 className="gallery-carousel flex snap-x snap-mandatory gap-4 overflow-x-auto px-[calc(50vw-120px)] pb-10 sm:gap-6 sm:px-[calc(50vw-150px)] lg:gap-8 lg:px-[calc(50vw-180px)]"
                 style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
+                  scrollbarWidth:
+                    'none',
+                  msOverflowStyle:
+                    'none',
                 }}
               >
-                {filtered.map(
+                {carouselImages.map(
                   (img, index) => {
-                    /*
-                     * Distance from the center image.
-                     *
-                     * Center:
-                     * 1.12
-                     *
-                     * One away:
-                     * 0.92
-                     *
-                     * Two or more away:
-                     * 0.82
-                     */
                     const distance =
                       Math.abs(
                         index -
                           activeIndex
                       );
 
-                    const scale =
+                    /*
+                     * Center:
+                     * 1.12
+                     *
+                     * One image away:
+                     * 0.94
+                     *
+                     * Two images away:
+                     * 0.86
+                     *
+                     * Further:
+                     * 0.80
+                     */
+                    let scale = 0.8;
+
+                    if (
                       distance === 0
-                        ? 1.12
-                        : distance === 1
-                          ? 0.92
-                          : 0.82;
+                    ) {
+                      scale = 1.12;
+                    } else if (
+                      distance === 1
+                    ) {
+                      scale = 0.94;
+                    } else if (
+                      distance === 2
+                    ) {
+                      scale = 0.86;
+                    }
 
                     return (
                       <motion.div
-                        key={img.id}
+                        key={`${img.id}-${index}`}
                         data-gallery-card
                         initial={{
                           opacity: 0,
@@ -517,27 +790,14 @@ export default function Gallery({
                           duration: 0.45,
                           ease: 'easeOut',
                         }}
+                        /*
+                         * CLICK ONLY opens image.
+                         *
+                         * Hover does NOT open it.
+                         */
                         onClick={() =>
                           openImage(img)
                         }
-                        onMouseEnter={() => {
-                          /*
-                           * Desktop:
-                           * Hover opens fullscreen.
-                           *
-                           * Mobile:
-                           * This will not trigger because
-                           * touch devices generally don't
-                           * have hover capability.
-                           */
-                          if (
-                            window.matchMedia(
-                              '(hover: hover)'
-                            ).matches
-                          ) {
-                            openImage(img);
-                          }
-                        }}
                         className="group relative w-60 shrink-0 cursor-pointer snap-center overflow-hidden rounded-xl border border-white/10 bg-black/20 sm:w-75 lg:w-90"
                       >
                         {/* =================================================
@@ -558,33 +818,25 @@ export default function Gallery({
                           />
 
                           {/* =================================================
-                              HOVER OVERLAY
+                              SUBTLE HOVER
                           ================================================== */}
 
-                          <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/20" />
+                          <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/20" />
 
                           {/* =================================================
                               CATEGORY LABEL
+                              Appears at bottom on hover.
+                              Remove this block too if you don't want
+                              the category name displayed.
                           ================================================== */}
 
-                          <div className="absolute inset-x-0 bottom-0 translate-y-full bg-linear-to-t from-black/80 via-black/40 to-transparent px-5 pb-5 pt-12 transition-transform duration-500 group-hover:translate-y-0">
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-linear-to-t from-black/80 via-black/40 to-transparent px-5 pb-5 pt-12 transition-transform duration-500 group-hover:translate-y-0">
                             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white">
                               {
                                 img.category
                               }
                             </span>
                           </div>
-
-                          {/* =================================================
-                              CENTER INDICATOR
-                          ================================================== */}
-
-                          {index ===
-                            activeIndex && (
-                            <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-neon-pink px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-charcoal shadow-neon-glow">
-                              Featured
-                            </div>
-                          )}
                         </div>
                       </motion.div>
                     );
@@ -620,7 +872,9 @@ export default function Gallery({
             exit={{
               opacity: 0,
             }}
-            onClick={closeImage}
+            onClick={
+              closeImage
+            }
             className="fixed inset-0 z-100 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md sm:p-6"
           >
             {/* ==================================================
