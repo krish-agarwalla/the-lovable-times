@@ -8,11 +8,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        charcoal: '#0a0a0a',
-        grit: '#161616',
+        // ── OPTION A: Deep Espresso (currently active) ──
+        charcoal: '#1a1114',   // was #0a0a0a (pure black) → now a deep warm espresso-brown
+        grit: '#271a1e',       // was #161616 → warmer, slightly lighter card background
+
+        // ── OPTION B: Midnight Plum (swap in if you prefer this) ──
+        // charcoal: '#180f18',
+        // grit: '#241628',
+
         'neon-pink': '#ff2d78',
         'hot-pink': '#ff5fa2',
         'pastel-pink': '#ffc2dd',
+
+        // New: a warm gold-ish accent for subtle premium touches
+        // (optional — use sparingly, e.g. on borders/dividers)
+        champagne: '#e8c9a8',
       },
       fontFamily: {
         street: ['var(--font-street)', 'sans-serif'],
