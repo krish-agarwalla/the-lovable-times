@@ -183,7 +183,7 @@ export default function Contact({
                SUCCESS MESSAGE
             ================================================== */
 
-            <div className="flex min-h-[500px] flex-col items-center justify-center text-center">
+            <div className="flex min-h-125 flex-col items-center justify-center text-center">
               <CheckCircle2 className="mb-5 h-14 w-14 text-neon-pink" />
 
               <h3 className="font-street text-3xl text-white sm:text-4xl">

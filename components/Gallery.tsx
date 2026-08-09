@@ -98,7 +98,7 @@ export default function Gallery({ images }: { images: GalleryImage[] }) {
                     height={800}
                     className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-neon-pink/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="absolute inset-0 flex items-end bg-linear-to-t from-neon-pink/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     <span className="p-4 text-sm font-semibold uppercase tracking-widest text-white">
                       {img.category}
                     </span>
@@ -113,7 +113,7 @@ export default function Gallery({ images }: { images: GalleryImage[] }) {
       {selected && (
         <div
           onClick={() => setSelected(null)}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/90 p-6 backdrop-blur-sm"
         >
           <button
             className="absolute right-6 top-6 text-white hover:text-neon-pink"
