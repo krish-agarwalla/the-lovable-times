@@ -15,13 +15,12 @@ export default function Navbar() {
     { label: 'Home', href: '/#home' },
     { label: 'Gallery', href: '/#gallery' },
     { label: 'About', href: '/#about' },
+    { label: 'Testimonials', href: '/#testimonials' },
     { label: 'Contact', href: '/#contact' },
   ];
 
   const closeMenu = () => setOpen(false);
 
-  // Track scroll position so the navbar can visually separate
-  // itself from the page once content starts scrolling underneath it.
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -31,7 +30,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll while the mobile sidebar is open
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => {
@@ -43,9 +41,6 @@ export default function Navbar() {
     <>
       {/* ======================================================
           NAVBAR
-          Always carries a blurred glass background + soft pink
-          bottom glow so it never visually merges with page
-          content — intensifies further once scrolled.
       ======================================================= */}
 
       <nav
@@ -55,7 +50,6 @@ export default function Navbar() {
             : 'bg-charcoal/60 backdrop-blur-md'
         }`}
       >
-        {/* Subtle neon bottom border — glows a bit stronger once scrolled */}
         <div
           className={`absolute inset-x-0 bottom-0 h-px transition-opacity duration-500 ${
             scrolled
@@ -66,7 +60,9 @@ export default function Navbar() {
 
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8">
           {/* ==================================================
-              LOGO
+              LOGO — now a TRUE circular crop, image fills edge
+              to edge with object-cover, no padding, no square
+              artifact visible inside the ring.
           ================================================== */}
 
           <Link
@@ -74,19 +70,18 @@ export default function Navbar() {
             onClick={closeMenu}
             className="group flex items-center gap-3"
           >
-            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white transition-all duration-300 group-hover:border-neon-pink/60 group-hover:shadow-neon-glow">
+            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 transition-all duration-300 group-hover:border-neon-pink/60 group-hover:shadow-neon-glow">
               {!logoError ? (
                 <Image
                   src="/logo.png"
                   alt="The Lovable Times"
                   fill
                   sizes="44px"
-                  className="object-contain p-1.5"
+                  className="object-cover"
                   onError={() => setLogoError(true)}
                 />
               ) : (
-                // Graceful fallback so a missing file never leaves a blank box
-                <div className="flex h-full w-full items-center justify-center bg-charcoal">
+                <div className="flex h-full w-full items-center justify-center bg-white">
                   <Camera className="h-5 w-5 text-neon-pink" />
                 </div>
               )}
@@ -137,11 +132,6 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <>
-            {/* ==================================================
-                BACKDROP — heavier blur so the sidebar reads as
-                clearly floating above the page, not blended in
-            ================================================== */}
-
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -151,10 +141,6 @@ export default function Navbar() {
               className="fixed inset-0 z-110 bg-black/70 backdrop-blur-sm md:hidden"
             />
 
-            {/* ==================================================
-                SIDEBAR
-            ================================================== */}
-
             <motion.aside
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -162,30 +148,27 @@ export default function Navbar() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="fixed right-0 top-0 z-120 flex h-dvh w-[85%] max-w-sm flex-col overflow-hidden border-l border-neon-pink/20 bg-linear-to-b from-grit via-charcoal to-charcoal shadow-2xl md:hidden"
             >
-              {/* Ambient glow blobs for premium depth — matches
-                  the rest of the site's visual language instead
-                  of a flat dark rectangle */}
               <div className="pointer-events-none absolute -top-20 right-0 h-64 w-64 rounded-full bg-neon-pink/15 blur-[100px]" />
               <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full bg-hot-pink/10 blur-[100px]" />
 
               {/* ==================================================
-                  SIDEBAR HEADER
+                  SIDEBAR HEADER — same circular logo fix
               ================================================== */}
 
               <div className="relative flex h-20 shrink-0 items-center justify-between border-b border-white/10 px-6">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white">
+                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/10">
                     {!logoError ? (
                       <Image
                         src="/logo.png"
                         alt="The Lovable Times"
                         fill
                         sizes="40px"
-                        className="object-contain p-1"
+                        className="object-cover"
                         onError={() => setLogoError(true)}
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-charcoal">
+                      <div className="flex h-full w-full items-center justify-center bg-white">
                         <Camera className="h-4 w-4 text-neon-pink" />
                       </div>
                     )}
