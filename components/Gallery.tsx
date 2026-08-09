@@ -538,7 +538,7 @@ export default function Gallery({
                             openImage(img);
                           }
                         }}
-                        className="group relative w-60 shrink-0 cursor-pointer snap-center overflow-hidden rounded-xl border border-white/10 bg-black/20 sm:w-[300px] lg:w-[360px]"
+                        className="group relative w-60 shrink-0 cursor-pointer snap-center overflow-hidden rounded-xl border border-white/10 bg-black/20 sm:w-75 lg:w-90"
                       >
                         {/* =================================================
                             IMAGE
