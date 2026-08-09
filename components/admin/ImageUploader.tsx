@@ -43,7 +43,7 @@ export default function ImageUploader() {
       <input
         type="file"
         name="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         required
         className="mb-3 block w-full text-sm text-white/70 file:mr-4 file:rounded-full file:border-0 file:bg-neon-pink file:px-4 file:py-2 file:font-semibold file:text-charcoal"
       />

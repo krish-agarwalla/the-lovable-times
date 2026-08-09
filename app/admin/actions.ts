@@ -8,25 +8,48 @@ import { GALLERY_CATEGORIES } from '@/lib/supabase/constants';
 // IMAGE UPLOAD
 // ============================================================
 
-export async function uploadImage(formData: FormData) {
+export async function uploadImage(
+  formData: FormData
+) {
   const supabase = await createClient();
+
+  // ==========================================================
+  // AUTHENTICATION
+  // ==========================================================
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
-  const file = formData.get('file') as File | null;
-  const category = formData.get('category') as string | null;
+  // ==========================================================
+  // GET FORM DATA
+  // ==========================================================
+
+  const file =
+    formData.get('file') as File | null;
+
+  const category =
+    formData.get('category') as string | null;
+
   const altText =
-    (formData.get('altText') as string) || 'The Lovable Times';
+    (formData.get('altText') as string) ||
+    'The Lovable Times';
 
   if (!file || file.size === 0) {
-    return { error: 'No file provided.' };
+    return {
+      error: 'No file provided.',
+    };
   }
+
+  // ==========================================================
+  // SECURITY: VALIDATE CATEGORY
+  // ==========================================================
 
   if (
     !category ||
@@ -34,25 +57,97 @@ export async function uploadImage(formData: FormData) {
       category as (typeof GALLERY_CATEGORIES)[number]
     )
   ) {
-    return { error: 'Please select a valid category.' };
+    return {
+      error: 'Please select a valid category.',
+    };
   }
 
-  const fileExt = file.name.split('.').pop()?.toLowerCase();
+  // ==========================================================
+  // SECURITY: VALIDATE FILE TYPE
+  // ==========================================================
+
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      error:
+        'Only JPG, PNG, or WEBP images are allowed.',
+    };
+  }
+
+  // ==========================================================
+  // SECURITY: VALIDATE FILE SIZE
+  // Maximum 10 MB
+  // ==========================================================
+
+  const maxSizeBytes =
+    10 * 1024 * 1024;
+
+  if (file.size > maxSizeBytes) {
+    return {
+      error: 'Image must be under 10MB.',
+    };
+  }
+
+  // ==========================================================
+  // SECURITY: SAFE FILE EXTENSION
+  //
+  // Never trust the original filename.
+  // Determine the extension from the validated MIME type.
+  // ==========================================================
+
+  const extMap: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+  };
+
+  const fileExt = extMap[file.type];
 
   if (!fileExt) {
-    return { error: 'Invalid file type.' };
+    return {
+      error: 'Invalid file type.',
+    };
   }
 
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  const storagePath = `public/${fileName}`;
+  // ==========================================================
+  // CREATE UNIQUE STORAGE PATH
+  // ==========================================================
 
-  const { error: uploadError } = await supabase.storage
-    .from('gallery')
-    .upload(storagePath, file);
+  const fileName =
+    `${crypto.randomUUID()}.${fileExt}`;
+
+  const storagePath =
+    `public/${fileName}`;
+
+  // ==========================================================
+  // UPLOAD TO SUPABASE STORAGE
+  // ==========================================================
+
+  const { error: uploadError } =
+    await supabase.storage
+      .from('gallery')
+      .upload(
+        storagePath,
+        file,
+        {
+          contentType: file.type,
+        }
+      );
 
   if (uploadError) {
-    return { error: uploadError.message };
+    return {
+      error: uploadError.message,
+    };
   }
+
+  // ==========================================================
+  // GET PUBLIC URL
+  // ==========================================================
 
   const {
     data: { publicUrl },
@@ -60,28 +155,48 @@ export async function uploadImage(formData: FormData) {
     .from('gallery')
     .getPublicUrl(storagePath);
 
-  const { error: dbError } = await supabase
-    .from('gallery_images')
-    .insert({
-      image_url: publicUrl,
-      storage_path: storagePath,
-      alt_text: altText,
-      category,
-    });
+  // ==========================================================
+  // INSERT DATABASE RECORD
+  // ==========================================================
+
+  const { error: dbError } =
+    await supabase
+      .from('gallery_images')
+      .insert({
+        image_url: publicUrl,
+        storage_path: storagePath,
+
+        // Limit alt text length
+        alt_text: altText
+          .slice(0, 200),
+
+        category,
+      });
+
+  // ==========================================================
+  // CLEANUP STORAGE IF DATABASE INSERT FAILS
+  // ==========================================================
 
   if (dbError) {
-    // Remove uploaded file if database insert fails
     await supabase.storage
       .from('gallery')
       .remove([storagePath]);
 
-    return { error: dbError.message };
+    return {
+      error: dbError.message,
+    };
   }
+
+  // ==========================================================
+  // REVALIDATE
+  // ==========================================================
 
   revalidatePath('/');
   revalidatePath('/admin');
 
-  return { success: true };
+  return {
+    success: true,
+  };
 }
 
 // ============================================================
@@ -99,32 +214,48 @@ export async function deleteImage(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
-  // Delete from Supabase Storage
-  const { error: storageError } = await supabase.storage
-    .from('gallery')
-    .remove([storagePath]);
+  // ==========================================================
+  // DELETE FROM STORAGE
+  // ==========================================================
+
+  const { error: storageError } =
+    await supabase.storage
+      .from('gallery')
+      .remove([storagePath]);
 
   if (storageError) {
-    return { error: storageError.message };
+    return {
+      error: storageError.message,
+    };
   }
 
-  // Delete database record
-  const { error: dbError } = await supabase
-    .from('gallery_images')
-    .delete()
-    .eq('id', id);
+  // ==========================================================
+  // DELETE DATABASE RECORD
+  // ==========================================================
+
+  const { error: dbError } =
+    await supabase
+      .from('gallery_images')
+      .delete()
+      .eq('id', id);
 
   if (dbError) {
-    return { error: dbError.message };
+    return {
+      error: dbError.message,
+    };
   }
 
   revalidatePath('/');
   revalidatePath('/admin');
 
-  return { success: true };
+  return {
+    success: true,
+  };
 }
 
 // ============================================================
@@ -142,25 +273,33 @@ export async function updateContent(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
-  const { error } = await supabase
-    .from('site_content')
-    .upsert({
-      key,
-      value,
-      updated_at: new Date().toISOString(),
-    });
+  const { error } =
+    await supabase
+      .from('site_content')
+      .upsert({
+        key,
+        value,
+        updated_at:
+          new Date().toISOString(),
+      });
 
   if (error) {
-    return { error: error.message };
+    return {
+      error: error.message,
+    };
   }
 
   revalidatePath('/');
   revalidatePath('/admin');
 
-  return { success: true };
+  return {
+    success: true,
+  };
 }
 
 // ============================================================
@@ -168,17 +307,23 @@ export async function updateContent(
 // ============================================================
 
 export async function logout() {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
-  const { error } = await supabase.auth.signOut();
+  const { error } =
+    await supabase.auth.signOut();
 
   if (error) {
-    return { error: error.message };
+    return {
+      error: error.message,
+    };
   }
 
   revalidatePath('/admin');
 
-  return { success: true };
+  return {
+    success: true,
+  };
 }
 
 // ============================================================
@@ -189,14 +334,17 @@ export async function updateInquiryStatus(
   inquiryId: string,
   status: string
 ) {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
   const allowedStatuses = [
@@ -206,16 +354,21 @@ export async function updateInquiryStatus(
     'closed',
   ];
 
-  if (!allowedStatuses.includes(status)) {
-    return { error: 'Invalid inquiry status.' };
+  if (
+    !allowedStatuses.includes(status)
+  ) {
+    return {
+      error: 'Invalid inquiry status.',
+    };
   }
 
-  const { error } = await supabase
-    .from('inquiries')
-    .update({
-      status,
-    })
-    .eq('id', inquiryId);
+  const { error } =
+    await supabase
+      .from('inquiries')
+      .update({
+        status,
+      })
+      .eq('id', inquiryId);
 
   if (error) {
     console.error(
@@ -242,20 +395,24 @@ export async function updateInquiryStatus(
 export async function deleteInquiry(
   inquiryId: string
 ) {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
-  const { error } = await supabase
-    .from('inquiries')
-    .delete()
-    .eq('id', inquiryId);
+  const { error } =
+    await supabase
+      .from('inquiries')
+      .delete()
+      .eq('id', inquiryId);
 
   if (error) {
     console.error(
@@ -274,62 +431,93 @@ export async function deleteInquiry(
     success: true,
   };
 }
+
 // ============================================================
 // ADD TESTIMONIAL
 // ============================================================
 
-export async function addTestimonial(formData: FormData) {
-  const supabase = await createClient();
+export async function addTestimonial(
+  formData: FormData
+) {
+  const supabase =
+    await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
+  // ==========================================================
+  // READ FORM DATA
+  // ==========================================================
+
   const clientName = (
-    formData.get('client_name') as string
+    formData.get(
+      'client_name'
+    ) as string
   )?.trim();
 
   const quote = (
-    formData.get('quote') as string
+    formData.get(
+      'quote'
+    ) as string
   )?.trim();
 
-  const ratingValue = Number(formData.get('rating'));
+  const ratingValue =
+    Number(
+      formData.get('rating')
+    );
 
-  // ----------------------------
-  // Validate input
-  // ----------------------------
+  // ==========================================================
+  // VALIDATE
+  // ==========================================================
 
   if (!clientName) {
-    return { error: 'Client name is required.' };
+    return {
+      error: 'Client name is required.',
+    };
   }
 
   if (!quote) {
-    return { error: 'Testimonial quote is required.' };
+    return {
+      error:
+        'Testimonial quote is required.',
+    };
   }
 
   if (
-    !Number.isInteger(ratingValue) ||
+    !Number.isInteger(
+      ratingValue
+    ) ||
     ratingValue < 1 ||
     ratingValue > 5
   ) {
-    return { error: 'Rating must be between 1 and 5.' };
+    return {
+      error:
+        'Rating must be between 1 and 5.',
+    };
   }
 
-  // ----------------------------
-  // Determine next sort order
-  // ----------------------------
+  // ==========================================================
+  // DETERMINE NEXT SORT ORDER
+  // ==========================================================
 
-  const { data: lastTestimonial, error: sortError } =
-    await supabase
-      .from('testimonials')
-      .select('sort_order')
-      .order('sort_order', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  const {
+    data: lastTestimonial,
+    error: sortError,
+  } = await supabase
+    .from('testimonials')
+    .select('sort_order')
+    .order('sort_order', {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
 
   if (sortError) {
     console.error(
@@ -337,24 +525,28 @@ export async function addTestimonial(formData: FormData) {
       sortError
     );
 
-    return { error: sortError.message };
+    return {
+      error: sortError.message,
+    };
   }
 
   const nextSortOrder =
-    (lastTestimonial?.sort_order ?? 0) + 1;
+    (lastTestimonial?.sort_order ?? 0) +
+    1;
 
-  // ----------------------------
-  // Insert testimonial
-  // ----------------------------
+  // ==========================================================
+  // INSERT TESTIMONIAL
+  // ==========================================================
 
-  const { error } = await supabase
-    .from('testimonials')
-    .insert({
-      client_name: clientName,
-      quote,
-      rating: ratingValue,
-      sort_order: nextSortOrder,
-    });
+  const { error } =
+    await supabase
+      .from('testimonials')
+      .insert({
+        client_name: clientName,
+        quote,
+        rating: ratingValue,
+        sort_order: nextSortOrder,
+      });
 
   if (error) {
     console.error(
@@ -362,7 +554,9 @@ export async function addTestimonial(formData: FormData) {
       error
     );
 
-    return { error: error.message };
+    return {
+      error: error.message,
+    };
   }
 
   revalidatePath('/');
@@ -372,6 +566,7 @@ export async function addTestimonial(formData: FormData) {
     success: true,
   };
 }
+
 // ============================================================
 // DELETE TESTIMONIAL
 // ============================================================
@@ -379,24 +574,30 @@ export async function addTestimonial(formData: FormData) {
 export async function deleteTestimonial(
   testimonialId: string
 ) {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'Not authorized.' };
+    return {
+      error: 'Not authorized.',
+    };
   }
 
   if (!testimonialId) {
-    return { error: 'Invalid testimonial ID.' };
+    return {
+      error: 'Invalid testimonial ID.',
+    };
   }
 
-  const { error } = await supabase
-    .from('testimonials')
-    .delete()
-    .eq('id', testimonialId);
+  const { error } =
+    await supabase
+      .from('testimonials')
+      .delete()
+      .eq('id', testimonialId);
 
   if (error) {
     console.error(

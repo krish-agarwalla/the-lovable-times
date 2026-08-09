@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { submitInquiry } from '@/app/actions';
 import {
   Mail,
   Phone,
@@ -34,6 +34,10 @@ type ContactForm = {
   budget: string;
   package: string;
   message: string;
+
+  // Honeypot field.
+  // Real users never see or fill this.
+  website: string;
 };
 
 export default function Contact({
@@ -41,7 +45,6 @@ export default function Contact({
   phone,
   instagram,
 }: ContactProps) {
-  const supabase = createClient();
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -54,58 +57,52 @@ export default function Contact({
     budget: '',
     package: '',
     message: '',
+    website: '',
   });
 
   // ============================================================
   // FORM SUBMIT
   // ============================================================
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
+ const handleSubmit = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
+  e.preventDefault();
 
-    if (!form.package) {
-      toast.error('Please select a package.');
+  // Client-side validation
+  if (!form.package) {
+    toast.error('Please select a package.');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const result = await submitInquiry(form);
+
+    if (result.error) {
+      toast.error(result.error);
       return;
     }
 
-    setLoading(true);
+    setSent(true);
 
-    try {
-      const { error } = await supabase.from('inquiries').insert({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim() || null,
-        event_type: form.event_type,
-        budget: form.budget.trim() || null,
-        package: form.package,
-        message: form.message.trim() || null,
-      });
+    toast.success(
+      'Got it! Sangram will reach out soon.'
+    );
+  } catch (error) {
+    console.error(
+      'Inquiry submission error:',
+      error
+    );
 
-      if (error) {
-        console.error('Supabase inquiry error:', error);
-
-        toast.error(
-          'Something went wrong. Please try again or contact us directly.'
-        );
-
-        return;
-      }
-
-      setSent(true);
-
-      toast.success('Got it! Sangram will reach out soon.');
-    } catch (error) {
-      console.error('Unexpected inquiry error:', error);
-
-      toast.error(
-        'Something went wrong. Please try again or contact us directly.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    toast.error(
+      'Something went wrong. Please try again or contact us directly.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section
@@ -128,8 +125,8 @@ export default function Contact({
           </h2>
 
           <p className="mt-5 max-w-xl text-base leading-7 text-white/60 sm:text-lg">
-            Booking a shoot in Mayurbhanj or beyond? Fill out the form
-            or reach out directly.
+            Booking a shoot in Mayurbhanj or beyond?
+            Fill out the form or reach out directly.
           </p>
 
           {/* Direct contact details */}
@@ -171,10 +168,20 @@ export default function Contact({
         ====================================================== */}
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          viewport={{
+            once: true,
+          }}
+          transition={{
+            duration: 0.6,
+          }}
           className="rounded-2xl border border-neon-pink/20 bg-grit p-6 sm:p-8"
         >
           {sent ? (
@@ -191,8 +198,8 @@ export default function Contact({
               </h3>
 
               <p className="mt-3 max-w-sm text-white/60">
-                Thank you for reaching out. Sangram typically replies
-                within 24 hours.
+                Thank you for reaching out. Sangram typically
+                replies within 24 hours.
               </p>
             </div>
 
@@ -202,7 +209,34 @@ export default function Contact({
                CONTACT FORM
             ================================================== */
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
+
+              {/* =================================================
+                  HONEYPOT
+                  
+                  Hidden from real users.
+                  Automated bots that blindly fill every field
+                  may populate this field.
+              ================================================== */}
+
+              <input
+                type="text"
+                name="website"
+                value={form.website}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    website: e.target.value,
+                  })
+                }
+                tabIndex={-1}
+                autoComplete="off"
+                className="absolute left-[-9999px] opacity-0"
+                aria-hidden="true"
+              />
 
               {/* =================================================
                   NAME
@@ -310,20 +344,23 @@ export default function Contact({
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      event_type: e.target.value as EventType,
+                      event_type:
+                        e.target.value as EventType,
                     })
                   }
                   className="w-full rounded-lg border border-white/10 bg-charcoal px-4 py-3 text-white outline-none transition focus:border-neon-pink"
                 >
-                  {EVENT_TYPE_OPTIONS.map((type) => (
-                    <option
-                      key={type}
-                      value={type}
-                      className="bg-charcoal text-white"
-                    >
-                      {type}
-                    </option>
-                  ))}
+                  {EVENT_TYPE_OPTIONS.map(
+                    (type) => (
+                      <option
+                        key={type}
+                        value={type}
+                        className="bg-charcoal text-white"
+                      >
+                        {type}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
@@ -386,15 +423,17 @@ export default function Contact({
                     Select a package...
                   </option>
 
-                  {PACKAGE_OPTIONS.map((pkg) => (
-                    <option
-                      key={pkg.value}
-                      value={pkg.value}
-                      className="bg-charcoal text-white"
-                    >
-                      {pkg.label}
-                    </option>
-                  ))}
+                  {PACKAGE_OPTIONS.map(
+                    (pkg) => (
+                      <option
+                        key={pkg.value}
+                        value={pkg.value}
+                        className="bg-charcoal text-white"
+                      >
+                        {pkg.label}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
@@ -436,7 +475,9 @@ export default function Contact({
               >
                 <Send className="h-4 w-4" />
 
-                {loading ? 'Sending...' : 'Send Inquiry'}
+                {loading
+                  ? 'Sending...'
+                  : 'Send Inquiry'}
               </button>
             </form>
           )}

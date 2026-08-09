@@ -4,6 +4,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import ImageManager from '@/components/admin/ImageManager';
 import ContentEditor from '@/components/admin/ContentEditor';
 import InquiriesManager from '@/components/admin/InquiriesManager';
+import InquiryExport from '@/components/admin/InquiryExport'; // ← new
 import TestimonialsManager from '@/components/admin/TestimonialsManager';
 import LogoutButton from '@/components/admin/LogoutButton';
 import type { GalleryImage, SiteContent, Inquiry, Testimonial } from '@/types/database';
@@ -40,6 +41,7 @@ export default async function AdminDashboard() {
           <TestimonialsManager items={(testimonials as Testimonial[]) ?? []} />
         </div>
         <div className="space-y-8">
+          <InquiryExport inquiries={(inquiries as Inquiry[]) ?? []} />
           <InquiriesManager inquiries={(inquiries as Inquiry[]) ?? []} />
           <ImageManager images={(images as GalleryImage[]) ?? []} />
         </div>

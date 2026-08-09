@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { updateInquiryStatus, deleteInquiry } from '@/app/admin/actions';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { Trash2, Mail, Phone, Wallet, Package } from 'lucide-react';
-import ConfirmDialog from './ConfirmDialog';
-import { PACKAGE_OPTIONS } from '@/lib/supabase/constants';
-import type { Inquiry } from '@/types/database';
+import { useState } from "react";
+import { updateInquiryStatus, deleteInquiry } from "@/app/admin/actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Trash2, Mail, Phone, Wallet, Package } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
+import { PACKAGE_OPTIONS } from "@/lib/supabase/constants";
+import type { Inquiry } from "@/types/database";
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-neon-pink text-charcoal',
-  contacted: 'bg-yellow-400 text-charcoal',
-  booked: 'bg-green-400 text-charcoal',
-  closed: 'bg-white/20 text-white',
+  new: "bg-neon-pink text-charcoal",
+  contacted: "bg-yellow-400 text-charcoal",
+  booked: "bg-green-400 text-charcoal",
+  closed: "bg-white/20 text-white",
 };
 
 // Convert stored value (e.g. "luxury_wedding") back to its readable label
@@ -22,14 +22,18 @@ function packageLabel(value: string | null) {
   return PACKAGE_OPTIONS.find((p) => p.value === value)?.label ?? value;
 }
 
-export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }) {
+export default function InquiriesManager({
+  inquiries,
+}: {
+  inquiries: Inquiry[];
+}) {
   const router = useRouter();
   const [pending, setPending] = useState<Inquiry | null>(null);
 
   const handleStatusChange = async (id: string, status: string) => {
     const result = await updateInquiryStatus(id, status);
     if (result.error) return toast.error(result.error);
-    toast.success('Status updated.');
+    toast.success("Status updated.");
     router.refresh();
   };
 
@@ -38,7 +42,7 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
     const result = await deleteInquiry(pending.id);
     setPending(null);
     if (result.error) return toast.error(result.error);
-    toast.success('Inquiry deleted.');
+    toast.success("Inquiry deleted.");
     router.refresh();
   };
 
@@ -54,18 +58,25 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
         )}
 
         {inquiries.map((inq) => (
-          <div key={inq.id} className="rounded-lg border border-white/10 bg-charcoal p-4">
+          <div
+            key={inq.id}
+            className="rounded-lg border border-white/10 bg-charcoal p-4"
+          >
             <div className="mb-2 flex items-start justify-between">
               <div>
                 <p className="font-semibold text-white">{inq.name}</p>
                 <p className="text-xs text-white/40">{inq.event_type}</p>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${STATUS_COLORS[inq.status]}`}>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${STATUS_COLORS[inq.status]}`}
+              >
                 {inq.status}
               </span>
             </div>
 
-            {inq.message && <p className="mb-3 text-sm text-white/70">{inq.message}</p>}
+            {inq.message && (
+              <p className="mb-3 text-sm text-white/70">{inq.message}</p>
+            )}
 
             {/* Budget + Package — the new fields */}
             <div className="mb-3 space-y-1 rounded-lg bg-grit p-3">
@@ -84,11 +95,17 @@ export default function InquiriesManager({ inquiries }: { inquiries: Inquiry[] }
             </div>
 
             <div className="mb-3 flex flex-wrap gap-3 text-xs text-white/50">
-              <a href={`mailto:${inq.email}`} className="flex items-center gap-1 hover:text-neon-pink">
+              <a
+                href={`mailto:${inq.email}`}
+                className="flex items-center gap-1 hover:text-neon-pink"
+              >
                 <Mail className="h-3 w-3" /> {inq.email}
               </a>
               {inq.phone && (
-                <a href={`tel:${inq.phone}`} className="flex items-center gap-1 hover:text-neon-pink">
+                <a
+                  href={`tel:${inq.phone}`}
+                  className="flex items-center gap-1 hover:text-neon-pink"
+                >
                   <Phone className="h-3 w-3" /> {inq.phone}
                 </a>
               )}

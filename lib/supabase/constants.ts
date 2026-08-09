@@ -61,3 +61,7 @@ export const PACKAGE_OPTIONS = [
     label: 'Not Sure, need idea',
   },
 ] as const;
+export function packageLabel(value: string | null): string {
+  if (!value) return '';
+  return PACKAGE_OPTIONS.find((p) => p.value === value)?.label ?? value;
+}
