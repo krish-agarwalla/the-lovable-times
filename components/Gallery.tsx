@@ -737,108 +737,63 @@ export default function Gallery({
                     'none',
                 }}
               >
-                {carouselImages.map(
-                  (img, index) => {
-                    const distance =
-                      Math.abs(
-                        index -
-                          activeIndex
-                      );
+              {carouselImages.map((img, index) => {
+                const distance = Math.abs(index - activeIndex);
 
-                    /*
-                     * Center:
-                     * 1.12
-                     *
-                     * One image away:
-                     * 0.94
-                     *
-                     * Two images away:
-                     * 0.86
-                     *
-                     * Further:
-                     * 0.80
-                     */
-                    let scale = 0.8;
+                return (
+                  <motion.div
+                    key={`${img.id}-${index}`}
+                    data-gallery-card
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{
+                      duration: 0.4,
+                    }}
+                    onClick={() => openImage(img)}
+                    className={`
+                      group relative shrink-0 cursor-pointer snap-center
+                      rounded-2xl border border-white/10 bg-black/20
+                      overflow-hidden
+                      transition-[width] duration-500 ease-out
 
-                    if (
-                      distance === 0
-                    ) {
-                      scale = 1.12;
-                    } else if (
-                      distance === 1
-                    ) {
-                      scale = 0.94;
-                    } else if (
-                      distance === 2
-                    ) {
-                      scale = 0.86;
-                    }
+                      ${
+                        distance === 0
+                          ? 'w-90 sm:w-105 lg:w-105'
+                          : distance === 1
+                            ? 'w-75 sm:w-87.5 lg:w-87.5'
+                            : 'w-60 sm:w-70 lg:w-70'
+                      }
+                    `}
+                  >
+                    <Image
+                      src={img.image_url}
+                      alt={img.alt_text}
+                      width={600}
+                      height={800}
+                      sizes="(max-width: 640px) 360px, 420px"
+                      className="
+                        block
+                        h-auto
+                        w-full
+                        rounded-2xl
+                        object-contain
+                      "
+                    />
 
-                    return (
-                      <motion.div
-                        key={`${img.id}-${index}`}
-                        data-gallery-card
-                        initial={{
-                          opacity: 0,
-                          scale: 0.8,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          scale,
-                        }}
-                        transition={{
-                          duration: 0.45,
-                          ease: 'easeOut',
-                        }}
-                        /*
-                         * CLICK ONLY opens image.
-                         *
-                         * Hover does NOT open it.
-                         */
-                        onClick={() =>
-                          openImage(img)
-                        }
-                        className="group relative w-60 shrink-0 cursor-pointer snap-center rounded-2xl border border-white/10 bg-black/20 sm:w-75 lg:w-90"
-                      >
-                        {/* =================================================
-                            IMAGE
-                        ================================================== */}
-
-                        <div className="relative aspect-3/4 overflow-hidden">
-                          <Image
-                            src={img.image_url}
-                            alt={img.alt_text}
-                            width={600}
-                            height={800}
-                            sizes="(max-width: 640px) 240px, (max-width: 1024px) 300px, 360px"
-                            className="block h-auto w-full rounded-2xl object-contain transition-transform duration-700"
-                          />
-
-                          {/* =================================================
-                              SUBTLE HOVER
-                          ================================================== */}
-
-                          <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/20" />
-
-                          {/* =================================================
-                              CATEGORY LABEL
-                              Appears at bottom on hover.
-                              Remove this block too if you don't want
-                              the category name displayed.
-                          ================================================== */}
-
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-linear-to-t from-black/80 via-black/40 to-transparent px-5 pb-5 pt-12 transition-transform duration-500 group-hover:translate-y-0">
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                              {
-                                img.category
-                              }
-                            </span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  }
-                )}
+                    {/* Very subtle hover effect */}
+                    <div
+                      className="
+                        pointer-events-none
+                        absolute inset-0
+                        rounded-2xl
+                        bg-black/0
+                        transition-colors duration-300
+                        group-hover:bg-black/10
+                      "
+                    />
+                  </motion.div>
+                );
+              })}
               </div>
 
               {/* ==================================================
