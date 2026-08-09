@@ -798,7 +798,7 @@ export default function Gallery({
                         onClick={() =>
                           openImage(img)
                         }
-                        className="group relative w-60 shrink-0 cursor-pointer snap-center overflow-hidden rounded-xl border border-white/10 bg-black/20 sm:w-75 lg:w-90"
+                        className="group relative w-60 shrink-0 cursor-pointer snap-center rounded-2xl border border-white/10 bg-black/20 sm:w-75 lg:w-90"
                       >
                         {/* =================================================
                             IMAGE
@@ -806,15 +806,12 @@ export default function Gallery({
 
                         <div className="relative aspect-3/4 overflow-hidden">
                           <Image
-                            src={
-                              img.image_url
-                            }
-                            alt={
-                              img.alt_text
-                            }
-                            fill
+                            src={img.image_url}
+                            alt={img.alt_text}
+                            width={600}
+                            height={800}
                             sizes="(max-width: 640px) 240px, (max-width: 1024px) 300px, 360px"
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="block h-auto w-full rounded-2xl object-contain transition-transform duration-700"
                           />
 
                           {/* =================================================
