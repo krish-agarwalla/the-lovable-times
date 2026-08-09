@@ -20,6 +20,8 @@ export interface Inquiry {
   email: string;
   phone: string | null;
   event_type: string;
+  budget: string | null;
+  package: string | null;
   message: string | null;
   status: 'new' | 'contacted' | 'booked' | 'closed';
   created_at: string;

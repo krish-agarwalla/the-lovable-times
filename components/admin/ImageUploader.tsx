@@ -5,6 +5,7 @@ import { uploadImage } from '@/app/admin/actions';
 import { UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { GALLERY_CATEGORIES } from '@/lib/supabase/constants';
 
 export default function ImageUploader() {
   const [loading, setLoading] = useState(false);
@@ -47,12 +48,25 @@ export default function ImageUploader() {
         className="mb-3 block w-full text-sm text-white/70 file:mr-4 file:rounded-full file:border-0 file:bg-neon-pink file:px-4 file:py-2 file:font-semibold file:text-charcoal"
       />
 
-      <input
-        type="text"
+      {/* Category is now a controlled dropdown — no more free text */}
+      <label className="mb-1 block text-xs uppercase tracking-widest text-white/50">
+        Category
+      </label>
+      <select
         name="category"
-        placeholder="Category (e.g. wedding, street, portrait)"
+        required
+        defaultValue=""
         className="mb-3 w-full rounded-lg border border-white/10 bg-charcoal px-4 py-2 text-white outline-none focus:border-neon-pink"
-      />
+      >
+        <option value="" disabled>
+          Select a category...
+        </option>
+        {GALLERY_CATEGORIES.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
 
       <input
         type="text"
