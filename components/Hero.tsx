@@ -58,16 +58,9 @@ export default function Hero({
         transition={{ duration: 0.6 }}
         className="relative z-10 mb-4 flex items-center justify-center gap-2 text-sm uppercase tracking-[0.3em] text-pastel-pink"
       >
-        <MapPin className="h-4 w-4 text-neon-pink" />
-
-        <a
-          href="https://maps.app.goo.gl/MbQngwRabaBQfwPY8"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-colors duration-300 hover:text-neon-pink hover:underline"
-        >
-          Rairangpur, Mayurbhanj, Odisha
-        </a>
+      <p className="mt-4 text-sm text-white/40">
+        Serving Pan India
+      </p>
       </motion.div>
 
       <motion.h1

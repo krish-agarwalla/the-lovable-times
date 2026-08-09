@@ -21,11 +21,19 @@ export default function About({ aboutText }: { aboutText: string }) {
           <h2 className="mb-6 font-street text-4xl text-white sm:text-5xl">
             SANGRAM <span className="text-hot-pink">AJ</span>
           </h2>
-          <p className="leading-relaxed text-white/70">
+          <p className="whitespace-pre-line leading-relaxed text-white/70">
             {aboutText}
           </p>
           <p className="mt-4 text-sm text-white/40">
-            📍 Rairangpur, Mayurbhanj, Odisha
+            📍{' '}
+            <a
+              href="https://maps.app.goo.gl/MbQngwRabaBQfwPY8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors duration-300 hover:text-neon-pink hover:underline"
+            >
+              Rairangpur, Mayurbhanj, Odisha
+            </a>
           </p>
         </div>
       </div>
