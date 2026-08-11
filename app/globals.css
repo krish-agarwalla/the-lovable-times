@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@config "../tailwind.config.ts";
 
 :root {
   --font-street: "Anton", sans-serif;
@@ -15,9 +14,19 @@ body {
   color: #8E1F2D;
 }
 
-/* Premium red text outline */
+/* Solid red text with a slightly darker red outline —
+   use for headlines where you want a bit of depth/weight */
 .text-neon-outline {
   -webkit-text-stroke: 1px #8E1F2D;
+}
+
+/* TRUE hollow text — transparent fill, red outline only.
+   Use this for large display headlines where you want the
+   beige background to show through the letters themselves. */
+.text-hollow {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #8E1F2D;
+  text-shadow: 1.5px #8E1F2D; /* fallback for browsers that support it */
 }
 
 /* Custom scrollbar */

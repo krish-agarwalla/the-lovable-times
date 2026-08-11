@@ -94,7 +94,7 @@ export default function ConfirmDialog({
                 className={`rounded-full px-5 py-2 text-sm font-semibold uppercase tracking-wide transition ${
                   danger
                     ? 'bg-neon-pink text-charcoal hover:shadow-neon-glow'
-                    : 'bg-white text-charcoal hover:bg-white/90'
+                    : 'bg-paper text-charcoal hover:bg-paper/90'
                 }`}
               >
                 {confirmLabel}

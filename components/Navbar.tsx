@@ -81,7 +81,7 @@ export default function Navbar() {
                   onError={() => setLogoError(true)}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-white">
+                <div className="flex h-full w-full items-center justify-center bg-paper">
                   <Camera className="h-5 w-5 text-neon-pink" />
                 </div>
               )}
