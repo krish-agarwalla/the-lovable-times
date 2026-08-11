@@ -6,29 +6,26 @@
 }
 
 body {
-  background: #111111;
+  background: #1C1410;
   color: white;
 }
-:root {
-  --font-street: 'Anton', sans-serif;
-  --font-body: 'Inter', sans-serif;
-}
-
 
 /* Neon text stroke effect for headlines */
 .text-neon-outline {
-  -webkit-text-stroke: 1px #ff2d78;
+  -webkit-text-stroke: 1px #B3262E;
 }
 
-/* Custom scrollbar - urban/dark theme */
+/* Custom scrollbar - premium beige/red theme */
 ::-webkit-scrollbar {
   width: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: #1C1410;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #ff2d78;
+  background: #B3262E;
   border-radius: 5px;
 }
 
@@ -38,10 +35,12 @@ body {
   margin-left: -16px;
   width: auto;
 }
+
 .masonry-grid_column {
   padding-left: 16px;
   background-clip: padding-box;
 }
+
 .masonry-grid_column > div {
   margin-bottom: 16px;
 }
