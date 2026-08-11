@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  /* Luxury palette */
+  --color-charcoal: #F7F1E8;
+  --color-grit: #EFE5D8;
+
+  --color-neon-pink: #8E1F2D;
+  --color-hot-pink: #A92E3D;
+  --color-pastel-pink: #E8C9C4;
+
+  --color-champagne: #C8A56A;
+}
+
 :root {
   --font-street: "Anton", sans-serif;
   --font-body: "Inter", sans-serif;
@@ -10,32 +22,23 @@ html {
 }
 
 body {
+  margin: 0;
   background: #F7F1E8;
-  color: #8E1F2D;
+  color: #3A1418;
 }
 
-/* Solid red text with a slightly darker red outline —
-   use for headlines where you want a bit of depth/weight */
+/* Premium red outline */
 .text-neon-outline {
   -webkit-text-stroke: 1px #8E1F2D;
 }
 
-/* TRUE hollow text — transparent fill, red outline only.
-   Use this for large display headlines where you want the
-   beige background to show through the letters themselves. */
-.text-hollow {
-  color: transparent;
-  -webkit-text-stroke: 1.5px #8E1F2D;
-  text-shadow: 1.5px #8E1F2D; /* fallback for browsers that support it */
-}
-
-/* Custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F0E7DA;
+  background: #EFE5D8;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -43,7 +46,11 @@ body {
   border-radius: 5px;
 }
 
-/* Masonry column gutters */
+::-webkit-scrollbar-thumb:hover {
+  background: #A92E3D;
+}
+
+/* Masonry gallery */
 .masonry-grid {
   display: flex;
   margin-left: -16px;
