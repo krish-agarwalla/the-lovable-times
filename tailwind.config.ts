@@ -9,12 +9,12 @@ const config: Config = {
     extend: {
       colors: {
         // ── OPTION A: Deep Espresso (currently active) ──
-        charcoal: '#1a1114',   // was #0a0a0a (pure black) → now a deep warm espresso-brown
-        grit: '#271a1e',       // was #161616 → warmer, slightly lighter card background
+        // charcoal: '#1a1114',   // was #0a0a0a (pure black) → now a deep warm espresso-brown
+        // grit: '#271a1e',       // was #161616 → warmer, slightly lighter card background
 
         // ── OPTION B: Midnight Plum (swap in if you prefer this) ──
-        // charcoal: '#180f18',
-        // grit: '#241628',
+        charcoal: '#180f18',
+        grit: '#241628',
 
         'neon-pink': '#ff2d78',
         'hot-pink': '#ff5fa2',
