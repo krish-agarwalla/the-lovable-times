@@ -14,7 +14,7 @@ const config: Config = {
       },
 
       boxShadow: {
-        'neon-glow': '0 0 25px rgba(142, 31, 45, 0.20)',
+        'neon-glow': '0 0 25px rgba(185, 154, 114, 0.18)',
       },
 
       backgroundImage: {
