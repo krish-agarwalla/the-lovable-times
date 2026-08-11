@@ -1,15 +1,17 @@
 @import "tailwindcss";
+@config "../tailwind.config.ts";
 
+/* ─────────────────────────────────────────────
+   TAILWIND v4 NATIVE COLOR OVERRIDE
+   This is the reliable way to override built-in
+   tokens in v4 — every text-white, bg-white/60,
+   border-white/10 etc. across the ENTIRE codebase
+   reads from these CSS variables directly, so this
+   takes effect instantly with zero component changes.
+───────────────────────────────────────────── */
 @theme {
-  /* Luxury palette */
-  --color-charcoal: #F7F1E8;
-  --color-grit: #EFE5D8;
-
-  --color-neon-pink: #8E1F2D;
-  --color-hot-pink: #A92E3D;
-  --color-pastel-pink: #E8C9C4;
-
-  --color-champagne: #C8A56A;
+  --color-white: #8E1F2D;  /* was pure white → deep red, used for all main text */
+  --color-black: #3A1418;  /* was pure black → dark maroon-brown, used for overlays/shadows */
 }
 
 :root {
@@ -22,23 +24,28 @@ html {
 }
 
 body {
-  margin: 0;
   background: #F7F1E8;
-  color: #3A1418;
+  color: #8E1F2D;
 }
 
-/* Premium red outline */
+/* Solid red text with a slightly darker red outline */
 .text-neon-outline {
   -webkit-text-stroke: 1px #8E1F2D;
 }
 
-/* Scrollbar */
+/* TRUE hollow text — transparent fill, red outline only */
+.text-hollow {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #8E1F2D;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #EFE5D8;
+  background: #F0E7DA;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -46,11 +53,7 @@ body {
   border-radius: 5px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #A92E3D;
-}
-
-/* Masonry gallery */
+/* Masonry column gutters */
 .masonry-grid {
   display: flex;
   margin-left: -16px;
