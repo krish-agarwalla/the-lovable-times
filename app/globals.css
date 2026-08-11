@@ -2,58 +2,99 @@
 @config "../tailwind.config.ts";
 
 /* ─────────────────────────────────────────────
-   TAILWIND v4 NATIVE COLOR OVERRIDE
-   This is the reliable way to override built-in
-   tokens in v4 — every text-white, bg-white/60,
-   border-white/10 etc. across the ENTIRE codebase
-   reads from these CSS variables directly, so this
-   takes effect instantly with zero component changes.
-───────────────────────────────────────────── */
+   PREMIUM WARM TAUPE / IVORY THEME
+
+   Background  → Deep warm taupe
+   Text        → Warm ivory
+   Accent      → Muted champagne / bronze
+   ───────────────────────────────────────────── */
+
 @theme {
-  --color-white: #8E1F2D;  /* was pure white → deep red, used for all main text */
-  --color-black: #3A1418;  /* was pure black → dark maroon-brown, used for overlays/shadows */
+  /* Override Tailwind built-in colors */
+  --color-white: #F4EDE2;
+  --color-black: #2F2823;
+
+  /* Premium brand palette */
+  --color-charcoal: #2F2823;
+  --color-grit: #3C332D;
+
+  --color-neon-pink: #B99A72;
+  --color-hot-pink: #D0B58C;
+  --color-pastel-pink: #E8DDD0;
+
+  --color-champagne: #B99A72;
 }
+
+
+/* ─────────────────────────────────────────────
+   FONTS
+   ───────────────────────────────────────────── */
 
 :root {
   --font-street: "Anton", sans-serif;
   --font-body: "Inter", sans-serif;
 }
 
+
+/* ─────────────────────────────────────────────
+   BASE
+   ───────────────────────────────────────────── */
+
 html {
-  background: #F7F1E8;
+  background: #2F2823;
 }
 
 body {
-  background: #F7F1E8;
-  color: #8E1F2D;
+  background: #2F2823;
+  color: #F4EDE2;
 }
 
-/* Solid red text with a slightly darker red outline */
+
+/* ─────────────────────────────────────────────
+   PREMIUM TEXT OUTLINE
+   ───────────────────────────────────────────── */
+
 .text-neon-outline {
-  -webkit-text-stroke: 1px #8E1F2D;
+  -webkit-text-stroke: 1px #B99A72;
 }
 
-/* TRUE hollow text — transparent fill, red outline only */
+
+/* ─────────────────────────────────────────────
+   HOLLOW / OUTLINE TEXT
+   ───────────────────────────────────────────── */
+
 .text-hollow {
   color: transparent;
-  -webkit-text-stroke: 1.5px #8E1F2D;
+  -webkit-text-stroke: 1.5px #B99A72;
 }
 
-/* Custom scrollbar */
+
+/* ─────────────────────────────────────────────
+   CUSTOM SCROLLBAR
+   ───────────────────────────────────────────── */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F0E7DA;
+  background: #3C332D;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #8E1F2D;
+  background: #B99A72;
   border-radius: 5px;
 }
 
-/* Masonry column gutters */
+::-webkit-scrollbar-thumb:hover {
+  background: #D0B58C;
+}
+
+
+/* ─────────────────────────────────────────────
+   MASONRY COLUMN GUTTERS
+   ───────────────────────────────────────────── */
+
 .masonry-grid {
   display: flex;
   margin-left: -16px;
