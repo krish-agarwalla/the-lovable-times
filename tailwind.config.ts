@@ -5,47 +5,34 @@ const config: Config = {
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
   ],
-  theme: {
-    extend: {
-      // colors: {
-      //   // ── OPTION A: Deep Espresso (currently active) ──
-      //   charcoal: '#1a1114',   // was #0a0a0a (pure black) → now a deep warm espresso-brown
-      //   grit: '#271a1e',       // was #161616 → warmer, slightly lighter card background
+      theme: {
+      extend: {
+        colors: {
+          charcoal: '#F7F1E8',
+          grit: '#EFE5D8',
 
-      //   // ── OPTION B: Midnight Plum (swap in if you prefer this) ──
-      //   // charcoal: '#180f18',
-      //   // grit: '#241628',
+          'neon-pink': '#8E1F2D',
+          'hot-pink': '#A92E3D',
+          'pastel-pink': '#E8C9C4',
 
-      //   'neon-pink': '#ff2d78',
-      //   'hot-pink': '#ff5fa2',
-      //   'pastel-pink': '#ffc2dd',
+          champagne: '#C8A56A',
+        },
 
-      //   // New: a warm gold-ish accent for subtle premium touches
-      //   // (optional — use sparingly, e.g. on borders/dividers)
-      //   champagne: '#e8c9a8',
-      // },
-      colors: {
-        charcoal: '#1C1410',   // Deep warm brown-black
-        grit: '#2A1E18',       // Premium dark beige-brown
+        fontFamily: {
+          street: ['var(--font-street)', 'sans-serif'],
+          body: ['var(--font-body)', 'sans-serif'],
+        },
 
-        'neon-pink': '#B3262E',   // Deep premium red
-        'hot-pink': '#D94A4A',    // Warm red
-        'pastel-pink': '#F2C7B8', // Soft beige-pink
+        boxShadow: {
+          'neon-glow': '0 0 25px rgba(142, 31, 45, 0.20)',
+        },
 
-        champagne: '#D8B98C',     // Warm beige / champagne
-      },
-      fontFamily: {
-        street: ['var(--font-street)', 'sans-serif'],
-        body: ['var(--font-body)', 'sans-serif'],
-      },
-      boxShadow: {
-        'neon-glow': '0 0 25px rgba(255, 45, 120, 0.55)',
-      },
-      backgroundImage: {
-        grain: "url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOSIgbnVtT2N0YXZlcz0iMiIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=')",
+        backgroundImage: {
+          grain:
+            "url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOSIgbnVtT2N0YXZlcz0iMiIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=')",
+        },
       },
     },
-  },
   plugins: [],
 };
 
