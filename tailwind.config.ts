@@ -7,22 +7,32 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // colors: {
+      //   // ── OPTION A: Deep Espresso (currently active) ──
+      //   charcoal: '#1a1114',   // was #0a0a0a (pure black) → now a deep warm espresso-brown
+      //   grit: '#271a1e',       // was #161616 → warmer, slightly lighter card background
+
+      //   // ── OPTION B: Midnight Plum (swap in if you prefer this) ──
+      //   // charcoal: '#180f18',
+      //   // grit: '#241628',
+
+      //   'neon-pink': '#ff2d78',
+      //   'hot-pink': '#ff5fa2',
+      //   'pastel-pink': '#ffc2dd',
+
+      //   // New: a warm gold-ish accent for subtle premium touches
+      //   // (optional — use sparingly, e.g. on borders/dividers)
+      //   champagne: '#e8c9a8',
+      // },
       colors: {
-        // ── OPTION A: Deep Espresso (currently active) ──
-        charcoal: '#1a1114',   // was #0a0a0a (pure black) → now a deep warm espresso-brown
-        grit: '#271a1e',       // was #161616 → warmer, slightly lighter card background
+        charcoal: '#1C1410',   // Deep warm brown-black
+        grit: '#2A1E18',       // Premium dark beige-brown
 
-        // ── OPTION B: Midnight Plum (swap in if you prefer this) ──
-        // charcoal: '#180f18',
-        // grit: '#241628',
+        'neon-pink': '#B3262E',   // Deep premium red
+        'hot-pink': '#D94A4A',    // Warm red
+        'pastel-pink': '#F2C7B8', // Soft beige-pink
 
-        'neon-pink': '#ff2d78',
-        'hot-pink': '#ff5fa2',
-        'pastel-pink': '#ffc2dd',
-
-        // New: a warm gold-ish accent for subtle premium touches
-        // (optional — use sparingly, e.g. on borders/dividers)
-        champagne: '#e8c9a8',
+        champagne: '#D8B98C',     // Warm beige / champagne
       },
       fontFamily: {
         street: ['var(--font-street)', 'sans-serif'],
