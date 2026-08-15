@@ -3,14 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Lock } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const supabase = createClient();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -42,12 +44,16 @@ export default function AdminLoginPage() {
       >
         <div className="mb-6 flex items-center justify-center gap-2">
           <Lock className="h-6 w-6 text-neon-pink" />
-          <h1 className="font-street text-2xl text-white">ADMIN ACCESS</h1>
+          <h1 className="font-street text-2xl text-white">
+            ADMIN ACCESS
+          </h1>
         </div>
 
+        {/* Email */}
         <label className="mb-1 block text-xs uppercase tracking-widest text-white/50">
           Email
         </label>
+
         <input
           type="email"
           required
@@ -56,17 +62,35 @@ export default function AdminLoginPage() {
           className="mb-4 w-full rounded-lg border border-white/10 bg-charcoal px-4 py-3 text-white outline-none focus:border-neon-pink"
         />
 
+        {/* Password */}
         <label className="mb-1 block text-xs uppercase tracking-widest text-white/50">
           Password
         </label>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-6 w-full rounded-lg border border-white/10 bg-charcoal px-4 py-3 text-white outline-none focus:border-neon-pink"
-        />
 
+        <div className="relative mb-6">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-lg border border-white/10 bg-charcoal px-4 py-3 pr-12 text-white outline-none focus:border-neon-pink"
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition hover:text-neon-pink"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+
+        {/* Sign In */}
         <button
           type="submit"
           disabled={loading}
