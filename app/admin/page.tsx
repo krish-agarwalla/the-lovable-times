@@ -1,17 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import ImageUploader from '@/components/admin/ImageUploader';
-import ImageManager from '@/components/admin/ImageManager';
-import ContentEditor from '@/components/admin/ContentEditor';
-import InquiriesManager from '@/components/admin/InquiriesManager';
-import InquiryExport from '@/components/admin/InquiryExport'; // ← new
-import TestimonialsManager from '@/components/admin/TestimonialsManager';
+import AdminDashboardClient from '@/components/admin/AdminDashboardClient';
 import LogoutButton from '@/components/admin/LogoutButton';
 import type { GalleryImage, SiteContent, Inquiry, Testimonial } from '@/types/database';
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect('/admin/login');
 
   const [{ data: images }, { data: content }, { data: inquiries }, { data: testimonials }] =
@@ -34,18 +31,12 @@ export default async function AdminDashboard() {
         <LogoutButton />
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-8">
-          <ImageUploader />
-          <ContentEditor content={(content as SiteContent[]) ?? []} />
-          <TestimonialsManager items={(testimonials as Testimonial[]) ?? []} />
-        </div>
-        <div className="space-y-8">
-          <InquiryExport inquiries={(inquiries as Inquiry[]) ?? []} />
-          <InquiriesManager inquiries={(inquiries as Inquiry[]) ?? []} />
-          <ImageManager images={(images as GalleryImage[]) ?? []} />
-        </div>
-      </div>
+      <AdminDashboardClient
+        images={(images as GalleryImage[]) ?? []}
+        content={(content as SiteContent[]) ?? []}
+        inquiries={(inquiries as Inquiry[]) ?? []}
+        testimonials={(testimonials as Testimonial[]) ?? []}
+      />
     </div>
   );
 }
