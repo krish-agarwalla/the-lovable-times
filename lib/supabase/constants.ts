@@ -33,16 +33,20 @@ export const EVENT_TYPE_OPTIONS = [
 // ============================================
 export const PACKAGE_OPTIONS = [
   {
-    value: 'semi_cinematic_1day',
-    label: '₹38,500 — Semi-Cinematic | 1 Day Event',
+    value: 'semi_cinematic_1day_engagement',
+    label: '₹38,500 — Semi-Cinematic | 1 Day Event - Engagement',
   },
   {
-    value: 'full_cinematic_1day',
-    label: '₹78,000 — Full-Cinematic | 1 Day Event',
+    value: 'semi_cinematic_1day_prewedding',
+    label: '₹38,500 — Semi-Cinematic | 1 Day Event - Pre-Wedding',
   },
   {
-    value: 'full_cinematic_1day_preweding',
-    label: '₹78,000 — Full-Cinematic | 1 Day Event + Pre-Wedding',
+    value: 'full_cinematic_1day_engagement',
+    label: '₹78,000 — Full-Cinematic | 1 Day Event - Engagement',
+  },
+  {
+    value: 'full_cinematic_1day_prewedding',
+    label: '₹78,000 — Full-Cinematic | 1 Day Event - Pre-Wedding',
   },
   {
     value: 'semi_cinematic_wedding',
@@ -61,6 +65,7 @@ export const PACKAGE_OPTIONS = [
     label: 'Not Sure, need idea',
   },
 ] as const;
+
 export function packageLabel(value: string | null): string {
   if (!value) return '';
   return PACKAGE_OPTIONS.find((p) => p.value === value)?.label ?? value;
