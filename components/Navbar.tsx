@@ -89,7 +89,10 @@ export default function Navbar() {
 
             <span className="text-sm font-medium tracking-wide text-white sm:text-base">
               The Lovable Times
-              <span className="hidden text-white/50 sm:inline"> | Photos & Films</span>
+              <span className="block text-white/50 sm:inline">
+                <span className="hidden sm:inline"> </span>
+                Photos & Films
+              </span>
             </span>
           </Link>
 
